@@ -1,4 +1,4 @@
-import { Bell, Plus } from 'lucide-react'
+import { Bell, LogOut, Plus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { BarChart3, House, Kanban } from 'lucide-react'
 import type { Tab } from '../types'
@@ -15,9 +15,10 @@ interface SidebarProps {
   onChange: (tab: Tab) => void
   unread: number
   onBell: () => void
+  onLogout: () => void
 }
 
-export function Sidebar({ active, onChange, unread, onBell }: SidebarProps) {
+export function Sidebar({ active, onChange, unread, onBell, onLogout }: SidebarProps) {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-[#262628] bg-[#121213]">
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -67,7 +68,19 @@ export function Sidebar({ active, onChange, unread, onBell }: SidebarProps) {
         })}
       </nav>
 
-      <p className="px-5 pb-5 text-xs text-neutral-600">Frontend only · saved in this browser</p>
+      <div className="space-y-3 px-3 pb-5">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] text-neutral-400 transition-colors hover:bg-[#1a1a1c] hover:text-neutral-100"
+        >
+          <span className="flex size-9 items-center justify-center rounded-lg bg-[#1a1a1c]">
+            <LogOut size={18} strokeWidth={1.8} />
+          </span>
+          Sign out
+        </button>
+        <p className="px-2 text-xs text-neutral-600">Frontend only · saved in this browser</p>
+      </div>
     </aside>
   )
 }

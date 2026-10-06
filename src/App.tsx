@@ -12,7 +12,7 @@ import { CrmProvider, useCrm } from './store/CrmContext'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import type { Tab } from './types'
 
-function Shell() {
+function Shell({ onLogout }: { onLogout: () => void }) {
   const { store, unreadCount, markNotificationsRead, dismissNotification } = useCrm()
   const [tab, setTab] = useState<Tab>('today')
   const [leadId, setLeadId] = useState<string | null>(null)
@@ -38,6 +38,7 @@ function Shell() {
           setShowNotes((open) => !open)
           markNotificationsRead()
         }}
+        onLogout={onLogout}
       />
       <div className="relative min-w-0 flex-1">
         {showNotes && (
@@ -130,7 +131,7 @@ function App() {
 
   return (
     <CrmProvider>
-      <Shell />
+      <Shell onLogout={() => setIsAuthenticated(false)} />
     </CrmProvider>
   )
 }
