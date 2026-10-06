@@ -5,9 +5,11 @@ import { LeadDrawer } from './components/LeadDrawer'
 import { Sidebar } from './components/Sidebar'
 import { CaptureScreen } from './screens/CaptureScreen'
 import { InsightsScreen } from './screens/InsightsScreen'
+import { LoginScreen } from './screens/LoginScreen'
 import { PipelineScreen } from './screens/PipelineScreen'
 import { TodayScreen } from './screens/TodayScreen'
 import { CrmProvider, useCrm } from './store/CrmContext'
+import { useLocalStorage } from './hooks/useLocalStorage'
 import type { Tab } from './types'
 
 function Shell() {
@@ -120,6 +122,12 @@ function Shell() {
 }
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useLocalStorage('maycrm.auth', false)
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => setIsAuthenticated(true)} />
+  }
+
   return (
     <CrmProvider>
       <Shell />
