@@ -23,7 +23,7 @@ function Shell({ onLogout }: { onLogout: () => void }) {
   const openLead = (id: string) => setLeadId(id)
 
   return (
-    <div className="flex min-h-svh w-full bg-[#141415] text-neutral-100">
+    <div className="flex min-h-svh w-full bg-[#07090f] text-neutral-100">
       <Sidebar
         active={tab}
         onChange={(t) => {
@@ -42,38 +42,43 @@ function Shell({ onLogout }: { onLogout: () => void }) {
       />
       <div className="relative min-w-0 flex-1">
         {showNotes && (
-          <div className="absolute top-4 right-8 z-30 w-80 rounded-2xl border border-[#323235] bg-[#1b1b1d] p-4 shadow-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">Notifications</p>
+          <div className="animate-rise absolute top-6 left-4 z-30 w-80 rounded-2xl border border-white/[0.08] bg-[#0e111a]/95 p-2 shadow-[0_24px_60px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+            <div className="flex items-center justify-between px-3 py-2">
+              <p className="text-[14px] font-medium">Notifications</p>
               <button
                 type="button"
                 onClick={() => setShowNotes(false)}
                 aria-label="Close notifications"
-                className="flex size-8 items-center justify-center rounded-full bg-[#1f1f22] text-neutral-300 hover:text-neutral-50"
+                className="flex size-7 items-center justify-center rounded-lg text-neutral-500 hover:bg-white/[0.06] hover:text-white"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
-            <ul className="space-y-2">
+            <ul className="max-h-80 overflow-y-auto">
               {store.notifications.map((item) => (
-                <li key={item.id} className="group flex items-start justify-between gap-2 text-sm text-neutral-300">
-                  <span className="mt-0.5">{item.text}</span>
+                <li
+                  key={item.id}
+                  className="group flex items-start gap-3 rounded-xl px-3 py-2.5 text-[13px] text-neutral-300 hover:bg-white/[0.04]"
+                >
+                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[#7c5cff]" />
+                  <span className="flex-1 leading-relaxed">{item.text}</span>
                   <button
                     type="button"
                     onClick={() => dismissNotification(item.id)}
-                    className="flex size-6 shrink-0 items-center justify-center rounded-full text-neutral-500 opacity-0 transition-opacity hover:bg-[#2a2a2d] hover:text-neutral-200 group-hover:opacity-100"
+                    aria-label="Dismiss notification"
+                    className="flex size-6 shrink-0 items-center justify-center rounded-md text-neutral-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/[0.08] hover:text-white"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 </li>
               ))}
               {store.notifications.length === 0 && (
-                <li className="text-sm text-neutral-500">Nothing waiting.</li>
+                <li className="px-3 py-6 text-center text-[13px] text-neutral-500">You're all caught up.</li>
               )}
             </ul>
           </div>
         )}
-        <main className="h-svh overflow-auto p-8">
+        <main className="h-svh overflow-auto bg-[radial-gradient(ellipse_at_top_right,rgba(73,124,255,0.07),transparent_45%)] px-10 py-9">
           {tab === 'today' && (
             <TodayScreen onOpenLead={openLead} onInsights={() => setTab('insights')} />
           )}
@@ -82,6 +87,7 @@ function Shell({ onLogout }: { onLogout: () => void }) {
           )}
           {tab === 'capture' && (
             <CaptureScreen
+              key={captureType}
               type={captureType}
               onCreated={(id, createdType) => {
                 if (['lead', 'contact', 'opportunity', 'referral'].includes(createdType)) {
@@ -101,10 +107,10 @@ function Shell({ onLogout }: { onLogout: () => void }) {
         <button
           type="button"
           onClick={() => setShowCaptureSheet(true)}
-          className="absolute right-8 bottom-8 flex size-14 items-center justify-center rounded-full bg-[#2f7ef0] text-white shadow-lg shadow-blue-900/40 transition-transform hover:scale-105 active:scale-95"
+          className="absolute right-8 bottom-8 flex size-14 items-center justify-center rounded-2xl bg-[#7c5cff] text-white shadow-[0_12px_32px_rgba(124,92,255,0.5)] transition-all hover:scale-105 hover:bg-[#8b6dff] active:scale-95"
           aria-label="Open capture options"
         >
-          <Plus size={28} strokeWidth={2} />
+          <Plus size={26} strokeWidth={2.2} />
         </button>
       </div>
       <LeadDrawer leadId={leadId} onClose={() => setLeadId(null)} />

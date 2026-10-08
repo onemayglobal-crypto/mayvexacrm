@@ -85,7 +85,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </div>
 
         <div className="relative w-full max-w-[440px] overflow-hidden rounded-[32px] border border-white/10 bg-[#101118]/90 p-10 shadow-[0_30px_100px_rgba(0,0,0,0.55),0_0_70px_rgba(79,70,229,0.10)] backdrop-blur-xl">
-          <div className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#6da8ff] to-transparent shadow-[0_0_18px_2px_rgba(109,168,255,0.8)]" />
+          <div className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-[#7c5cff] to-transparent shadow-[0_0_18px_2px_rgba(124,92,255,0.8)]" />
           <div className="text-center">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-blue-300/70">
               Your growth workspace
@@ -174,7 +174,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
             <button
               type="submit"
-              className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#16bdf5] via-[#497cff] to-[#9b5cf6] text-[16px] font-semibold text-white shadow-[0_12px_35px_rgba(87,92,255,0.32)] transition-all hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+              className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#7c5cff] text-[16px] font-semibold text-white shadow-[0_12px_35px_rgba(124,92,255,0.45)] transition-all hover:scale-[1.02] hover:bg-[#8b6dff] active:scale-[0.98]"
             >
               Sign in &rarr;
             </button>

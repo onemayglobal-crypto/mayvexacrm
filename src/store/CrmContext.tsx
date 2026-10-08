@@ -3,7 +3,7 @@ import { seedStore, taskFromLead } from '../data/seed'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { uid } from '../lib/format'
 import type { CrmStore, Lead, Settings, Task } from '../types'
-import { GRADE_WEIGHT, migrateLeadStage } from '../types'
+import { GRADE_WEIGHT, inferLeadType, migrateLeadStage } from '../types'
 
 interface CrmContextValue {
   store: CrmStore
@@ -42,9 +42,9 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       let changed = false
       const leads = prev.leads.map((lead) => {
         const stage = migrateLeadStage(String(lead.stage), lead.grade)
-        if (stage === lead.stage) return lead
+        if (stage === lead.stage && lead.type) return lead
         changed = true
-        return { ...lead, stage }
+        return { ...lead, stage, type: inferLeadType({ ...lead, stage }) }
       })
       return changed ? { ...prev, leads } : prev
     })

@@ -1,15 +1,15 @@
 import type { Grade } from '../types'
 
 const styles: Record<Grade, string> = {
-  'A+': 'border-[#2f9e57] bg-[#2f9e57]/10 text-[#4fd17e]',
-  A: 'border-[#3d8bfd] bg-[#3d8bfd]/10 text-[#7eb0ff]',
-  B: 'border-[#e8a93a] bg-[#e8a93a]/10 text-[#f0c36a]',
-  C: 'border-[#6b6b70] bg-[#2a2a2c] text-neutral-300',
+  'A+': 'bg-[#34d399]/12 text-[#6ee7b7] ring-[#34d399]/25',
+  A: 'bg-[#38bdf8]/12 text-[#7dd3fc] ring-[#38bdf8]/25',
+  B: 'bg-[#fbbf24]/12 text-[#fcd34d] ring-[#fbbf24]/25',
+  C: 'bg-white/[0.06] text-neutral-300 ring-white/10',
 }
 
 export function GradeBadge({ grade }: { grade: Grade }) {
   return (
-    <span className={`rounded-md border px-2 py-0.5 text-[12px] font-medium ${styles[grade]}`}>
+    <span className={`inline-flex h-6 min-w-6 items-center justify-center rounded-lg px-1.5 text-[11px] font-semibold ring-1 ring-inset ${styles[grade]}`}>
       {grade}
     </span>
   )

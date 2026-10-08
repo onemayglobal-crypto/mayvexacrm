@@ -14,6 +14,18 @@ export function migrateLeadStage(stage: string, grade: Grade): Stage {
   return 'B+'
 }
 
+export type LeadType = 'lead' | 'contact' | 'opportunity' | 'referral'
+
+export const LEAD_TYPES: LeadType[] = ['lead', 'contact', 'opportunity', 'referral']
+
+export function inferLeadType(lead: Pick<Lead, 'type' | 'notes' | 'stage'>): LeadType {
+  if (lead.type) return lead.type
+  if (/referr/i.test(lead.notes)) return 'referral'
+  if (lead.stage === 'Proposal' || lead.stage === 'Decision') return 'opportunity'
+  if (lead.stage === 'C+') return 'contact'
+  return 'lead'
+}
+
 export const GRADES: Grade[] = ['A+', 'A', 'B', 'C']
 
 export const GRADE_WEIGHT: Record<Grade, number> = {
@@ -33,6 +45,7 @@ export interface Lead {
   grade: Grade
   score: number
   stage: Stage
+  type?: LeadType
   nextAction: string
   notes: string
   lastContact?: string
@@ -84,6 +97,7 @@ export const EMPTY_LEAD: Omit<Lead, 'id' | 'createdAt'> = {
   grade: 'B',
   score: 50,
   stage: 'B+',
+  type: 'lead',
   nextAction: '',
   notes: '',
   meetings: 0,

@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
+  ArrowRight,
   ArrowUpRight,
   Calendar,
-  CheckSquare,
-  ChevronRight,
+  Check,
   CircleAlert,
   Clock,
   Flame,
@@ -12,24 +12,19 @@ import {
   Pencil,
   Phone,
   Plus,
-  TrendingUp,
   X,
 } from 'lucide-react'
 import { GradeBadge } from '../components/GradeBadge'
-import { ProgressRing } from '../components/ProgressRing'
 import { daysFrom, rupeesToLakhs } from '../lib/format'
+import { card, eyebrow, field, ghostBtn, iconBtn, initials, primaryBtn } from '../lib/ui'
 import { useCrm } from '../store/CrmContext'
 import type { Task } from '../types'
 
-const card = 'rounded-2xl border border-[#262628] bg-[#1b1b1d]'
-const ghost =
-  'flex h-10 items-center justify-center gap-2 rounded-lg border border-[#323235] bg-[#1f1f22] text-[14px] text-neutral-100 hover:bg-[#2a2a2d]'
-
 function formatToday(date: Date) {
   return date.toLocaleDateString('en-IN', {
-    weekday: 'short',
+    weekday: 'long',
     day: 'numeric',
-    month: 'short',
+    month: 'long',
   })
 }
 
@@ -59,24 +54,23 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
   const now = new Date()
   const [editingGoal, setEditingGoal] = useState(false)
   const [goalDraft, setGoalDraft] = useState(String(store.settings.monthlyGoal / 100000))
-  const [addingTask, setAddingTask] = useState(false)
   const [taskTitle, setTaskTitle] = useState('')
-  const [taskDetail, setTaskDetail] = useState('')
+  const [showDone, setShowDone] = useState(false)
 
   const percent = store.settings.monthlyGoal
     ? Math.min(100, Math.round((monthlyAchieved / store.settings.monthlyGoal) * 100))
     : 0
   const onTrack = monthlyAchieved >= store.settings.monthlyGoal * (now.getDate() / 30)
 
-  const priority = useMemo(() => {
-    return store.leads
-      .filter((lead) => lead.stage !== 'Won' && lead.stage !== 'Lost')
-      .sort((a, b) => b.score - a.score)[0]
-  }, [store.leads])
+  const openLeads = store.leads.filter((lead) => lead.stage !== 'Won' && lead.stage !== 'Lost')
+  const priority = [...openLeads].sort((a, b) => b.score - a.score)[0]
 
   const bToA = store.leads.filter(
     (lead) => lead.grade === 'B' && lead.meetings >= 2 && !lead.objectionsOpen && lead.stage !== 'Won',
   )
+
+  const openTasks = store.tasks.filter((task) => !task.done)
+  const doneTasks = store.tasks.filter((task) => task.done)
 
   const expireIn = daysFrom(priority?.proposalExpires)
   const reason = priority
@@ -102,224 +96,266 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
   const submitTask = () => {
     if (!taskTitle.trim()) return
     addTask({
-      kind: 'followup',
+      kind: 'todo',
       title: taskTitle.trim(),
-      detail: taskDetail.trim() || 'Manual task',
+      detail: 'Added from Today',
       actionLabel: 'Done',
       doneLabel: 'Undo',
       done: false,
       dueDate: new Date().toISOString(),
     })
     setTaskTitle('')
-    setTaskDetail('')
-    setAddingTask(false)
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-end justify-between">
+    <div className="animate-rise mx-auto max-w-6xl space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-neutral-400">{formatToday(now)}</p>
-          <h1 className="text-3xl font-medium text-neutral-50">{greeting(now)}</h1>
+          <p className="text-[14px] text-neutral-500">{formatToday(now)}</p>
+          <h1 className="mt-1 text-[34px] font-semibold tracking-[-0.03em] text-white">{greeting(now)}</h1>
+          <p className="mt-1 text-[15px] text-neutral-400">
+            {openTasks.length === 0
+              ? 'Your list is clear. A good day to find new leads.'
+              : `${openTasks.length} task${openTasks.length === 1 ? '' : 's'} waiting for you today.`}
+          </p>
         </div>
-        <p className="text-sm text-neutral-500">{store.leads.length} leads in this browser</p>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f97316]/20 bg-[#f97316]/10 px-3 py-1.5 text-[13px] font-medium text-[#fdba74]">
+          <Flame size={14} /> {store.settings.streakDays}-day streak
+        </span>
       </header>
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-4">
-          <section className={`${card} flex items-center gap-6 p-5`}>
-            <ProgressRing percent={percent} size={84} stroke={8} />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-neutral-400">Monthly goal</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGoalDraft(String(store.settings.monthlyGoal / 100000))
-                    setEditingGoal((open) => !open)
-                  }}
-                  className="text-neutral-500 hover:text-neutral-200"
-                  aria-label="Edit monthly goal"
-                >
-                  <Pencil size={14} />
-                </button>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className={`${card} group p-5`}>
+          <div className="flex items-center justify-between">
+            <p className="text-[13px] text-neutral-400">Monthly goal</p>
+            <button
+              type="button"
+              onClick={() => {
+                setGoalDraft(String(store.settings.monthlyGoal / 100000))
+                setEditingGoal((open) => !open)
+              }}
+              className="text-neutral-600 opacity-0 transition-opacity group-hover:opacity-100 hover:text-white"
+              aria-label="Edit monthly goal"
+            >
+              <Pencil size={14} />
+            </button>
+          </div>
+          {editingGoal ? (
+            <form
+              className="mt-3 flex items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                saveGoal()
+              }}
+            >
+              <div className="relative flex-1">
+                <span className="absolute top-1/2 left-3 -translate-y-1/2 text-neutral-500">₹</span>
+                <input
+                  autoFocus
+                  className={`${field} h-10 pr-8 pl-7`}
+                  value={goalDraft}
+                  onChange={(e) => setGoalDraft(e.target.value)}
+                />
+                <span className="absolute top-1/2 right-3 -translate-y-1/2 text-neutral-500">L</span>
               </div>
-              {editingGoal ? (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-neutral-400">₹</span>
-                  <input
-                    className="h-10 w-24 rounded-lg border border-[#323235] bg-[#141415] px-2"
-                    value={goalDraft}
-                    onChange={(e) => setGoalDraft(e.target.value)}
-                  />
-                  <span className="text-neutral-400">L target</span>
-                  <button type="button" onClick={saveGoal} className={`${ghost} px-3`}>
-                    Save
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <p className="text-2xl font-medium text-neutral-50">
-                    {rupeesToLakhs(monthlyAchieved)} of {rupeesToLakhs(store.settings.monthlyGoal)}
-                  </p>
-                  <p
-                    className={`mt-1 flex items-center gap-1 text-sm ${
-                      onTrack ? 'text-[#3ecf6e]' : 'text-[#f0c36a]'
-                    }`}
-                  >
-                    <TrendingUp size={14} />
-                    {onTrack ? 'On track' : 'Behind pace'}
-                  </p>
-                </>
-              )}
-            </div>
-            <div className="flex flex-col items-center gap-1 text-sm text-neutral-300">
-              <Flame size={22} className="text-[#f2722b]" />
-              {store.settings.streakDays} days
-            </div>
-          </section>
+              <button type="submit" className={`${primaryBtn} px-3`}>
+                Save
+              </button>
+            </form>
+          ) : (
+            <>
+              <p className="mt-2 text-[28px] font-semibold tracking-tight text-white">
+                {rupeesToLakhs(monthlyAchieved)}
+                <span className="text-[16px] font-normal text-neutral-500">
+                  {' '}
+                  / {rupeesToLakhs(store.settings.monthlyGoal)}
+                </span>
+              </p>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                <div
+                  className="h-full rounded-full bg-[#7c5cff] shadow-[0_0_12px_rgba(124,92,255,0.6)]"
+                  style={{ width: `${Math.max(3, percent)}%` }}
+                />
+              </div>
+              <p className={`mt-2 text-[12px] ${onTrack ? 'text-[#4ade80]' : 'text-[#fbbf24]'}`}>
+                {percent}% · {onTrack ? 'On track' : 'Behind pace'}
+              </p>
+            </>
+          )}
+        </div>
+        <Metric
+          label="Weighted pipeline"
+          value={rupeesToLakhs(weightedPipeline)}
+          hint={`${openLeads.length} open deals`}
+        />
+        <Metric
+          label="Meetings this week"
+          value={String(meetingsThisWeek)}
+          hint="Leads contacted since Monday"
+        />
+      </section>
 
-          <section className="grid grid-cols-2 gap-4">
-            <div className={`${card} p-5`}>
-              <p className="text-sm text-neutral-400">Weighted pipeline</p>
-              <p className="mt-1 text-2xl font-medium">{rupeesToLakhs(weightedPipeline)}</p>
-            </div>
-            <div className={`${card} p-5`}>
-              <p className="text-sm text-neutral-400">Meetings this week</p>
-              <p className="mt-1 text-2xl font-medium">{meetingsThisWeek}</p>
-            </div>
-          </section>
-
-          <div>
-            <h2 className="mb-2 text-sm text-neutral-400">Your #1 move today</h2>
-            {priority ? (
-              <section className="rounded-2xl border border-[#2d63b8] bg-[#191b20] p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <GradeBadge grade={priority.grade} />
-                    <button
-                      type="button"
-                      onClick={() => onOpenLead(priority.id)}
-                      className="text-lg text-neutral-50 hover:underline"
-                    >
-                      {priority.name}
-                    </button>
-                    {priority.company && (
-                      <span className="text-sm text-neutral-500">{priority.company}</span>
-                    )}
-                  </div>
-                  <span className="flex items-center gap-1 rounded-md bg-[#3d1517] px-2 py-0.5 text-[12px] font-medium text-[#f26d6d]">
-                    <Flame size={12} />
-                    {priority.score}
-                  </span>
-                </div>
-                <h3 className="mt-3 text-lg font-medium">
-                  {priority.nextAction || 'Follow up'}
-                </h3>
-                <p className="mt-1 text-[15px] leading-relaxed text-neutral-400">{reason}</p>
-                <div className="mt-4 flex gap-2">
-                  {priority.phone && (
-                    <a href={`tel:${priority.phone}`} className={`${ghost} flex-1`}>
-                      <Phone size={15} /> Call
-                    </a>
-                  )}
-                  {priority.phone && (
-                    <a
-                      href={`https://wa.me/${priority.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${priority.name.split(' ')[0]}, `)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={`${ghost} flex-1`}
-                    >
-                      <MessageCircle size={15} /> WhatsApp
-                    </a>
-                  )}
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+        <div className="space-y-4">
+          <h2 className={eyebrow}>Focus</h2>
+          {priority ? (
+            <section className="relative overflow-hidden rounded-3xl border border-[#7c5cff]/25 bg-gradient-to-br from-[#121a33] via-[#0e1220] to-[#0b0d14] p-6">
+              <div className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-[#7c5cff]/15 blur-3xl" />
+              <div className="relative flex items-center gap-3">
+                <span className="flex size-11 items-center justify-center rounded-2xl bg-white/[0.08] text-[14px] font-semibold text-white">
+                  {initials(priority.name)}
+                </span>
+                <div className="min-w-0 flex-1">
                   <button
                     type="button"
                     onClick={() => onOpenLead(priority.id)}
-                    className={`${ghost} w-12`}
-                    aria-label="Open lead"
+                    className="truncate text-[17px] font-medium text-white hover:underline"
                   >
-                    <ChevronRight size={17} />
+                    {priority.name}
                   </button>
+                  <p className="truncate text-[13px] text-neutral-400">{priority.company || 'No company'}</p>
                 </div>
-              </section>
-            ) : (
-              <p className={`${card} p-5 text-neutral-400`}>No open leads yet. Capture one to begin.</p>
-            )}
-          </div>
-        </div>
+                <GradeBadge grade={priority.grade} />
+              </div>
+              <p className="relative mt-6 text-[12px] font-medium tracking-[0.14em] text-[#a594ff] uppercase">
+                Your #1 move today
+              </p>
+              <h3 className="relative mt-1.5 text-[22px] font-semibold tracking-tight text-white">
+                {priority.nextAction || 'Follow up'}
+              </h3>
+              {reason && (
+                <p className="relative mt-2 line-clamp-2 text-[14px] leading-relaxed text-neutral-400">{reason}</p>
+              )}
+              <div className="relative mt-6 flex flex-wrap gap-2">
+                {priority.phone && (
+                  <a href={`tel:${priority.phone}`} className={primaryBtn}>
+                    <Phone size={15} /> Call
+                  </a>
+                )}
+                {priority.phone && (
+                  <a
+                    href={`https://wa.me/${priority.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${priority.name.split(' ')[0]}, `)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={ghostBtn}
+                  >
+                    <MessageCircle size={15} /> WhatsApp
+                  </a>
+                )}
+                <button type="button" onClick={() => onOpenLead(priority.id)} className={ghostBtn}>
+                  View lead <ArrowRight size={15} />
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className={`${card} p-8 text-center text-[14px] text-neutral-500`}>
+              No open leads yet. Press <span className="text-neutral-300">+ New</span> to add your first one.
+            </section>
+          )}
 
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm text-neutral-400">Then</h2>
+          {bToA.length > 0 && (
             <button
               type="button"
-              onClick={() => setAddingTask((open) => !open)}
-              className="flex items-center gap-1 text-sm text-[#7eb0ff]"
+              onClick={onInsights}
+              className={`${card} flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:border-white/[0.12]`}
             >
-              <Plus size={14} /> Add task
+              <span className="flex size-9 items-center justify-center rounded-xl bg-[#34d399]/10 text-[#34d399]">
+                <ArrowUpRight size={17} />
+              </span>
+              <span className="flex-1 text-[14px] text-neutral-300">
+                {bToA.length === 1 ? '1 lead is' : `${bToA.length} leads are`} ready to move from B to A
+              </span>
+              <span className="text-[13px] text-[#a594ff]">Review</span>
             </button>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className={eyebrow}>Tasks</h2>
+            <span className="text-[12px] text-neutral-500">{openTasks.length} open</span>
           </div>
-          <div className="space-y-2">
-            {addingTask && (
-              <section className={`${card} space-y-2 p-4`}>
-                <input
-                  className="h-10 w-full rounded-lg border border-[#323235] bg-[#141415] px-3"
-                  placeholder="Task title"
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                />
-                <input
-                  className="h-10 w-full rounded-lg border border-[#323235] bg-[#141415] px-3"
-                  placeholder="Detail"
-                  value={taskDetail}
-                  onChange={(e) => setTaskDetail(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
-                  <button type="button" className={`${ghost} px-3`} onClick={() => setAddingTask(false)}>
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="h-10 rounded-lg bg-[#2f7ef0] px-4 text-sm text-white"
-                    onClick={submitTask}
-                  >
-                    Save task
-                  </button>
-                </div>
-              </section>
-            )}
-            {store.tasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                onToggle={() => toggleTask(task.id)}
-                onDelete={() => deleteTask(task.id)}
+          <section className={`${card} p-2`}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                submitTask()
+              }}
+              className="flex items-center gap-2 border-b border-white/[0.05] px-3 pb-2"
+            >
+              <Plus size={16} className="shrink-0 text-neutral-500" />
+              <input
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder="Add a task and press Enter"
+                className="h-11 flex-1 bg-transparent text-[14px] text-neutral-100 outline-none placeholder:text-neutral-600"
               />
-            ))}
-            {store.tasks.length === 0 && !addingTask && (
-              <p className={`${card} p-5 text-neutral-500`}>No tasks. Add one or capture a lead.</p>
+              {taskTitle.trim() && (
+                <button type="submit" className="text-[13px] font-medium text-[#a594ff]">
+                  Add
+                </button>
+              )}
+            </form>
+            <ul className="py-1">
+              {openTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onToggle={() => toggleTask(task.id)}
+                  onDelete={() => deleteTask(task.id)}
+                />
+              ))}
+              {openTasks.length === 0 && (
+                <li className="px-3 py-8 text-center text-[13px] text-neutral-500">Nothing left. Nice work.</li>
+              )}
+            </ul>
+            {doneTasks.length > 0 && (
+              <div className="border-t border-white/[0.05] pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowDone((open) => !open)}
+                  className="w-full px-3 py-2.5 text-left text-[12px] text-neutral-500 hover:text-neutral-300"
+                >
+                  {showDone ? 'Hide' : 'Show'} {doneTasks.length} completed
+                </button>
+                {showDone && (
+                  <ul className="pb-1">
+                    {doneTasks.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onToggle={() => toggleTask(task.id)}
+                        onDelete={() => deleteTask(task.id)}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
-            <section className="flex items-center gap-3 rounded-2xl bg-[#0c2747] px-4 py-4">
-              <ArrowUpRight size={19} className="shrink-0 text-[#5ea2ff]" />
-              <p className="min-w-0 flex-1 text-[15px] text-[#6aa9ff]">
-                {bToA.length === 1
-                  ? '1 lead ready to move B to A'
-                  : `${bToA.length} leads ready to move B to A`}
-              </p>
-              <button
-                type="button"
-                onClick={onInsights}
-                className="h-10 rounded-lg border border-[#27456b] bg-[#0f2340] px-4 text-sm"
-              >
-                Review
-              </button>
-            </section>
-          </div>
+          </section>
         </div>
       </div>
     </div>
   )
+}
+
+function Metric({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <div className={`${card} p-5`}>
+      <p className="text-[13px] text-neutral-400">{label}</p>
+      <p className="mt-2 text-[28px] font-semibold tracking-tight text-white">{value}</p>
+      <p className="mt-2 text-[12px] text-neutral-500">{hint}</p>
+    </div>
+  )
+}
+
+const kindMeta: Record<Task['kind'], { icon: typeof Phone; color: string }> = {
+  overdue: { icon: CircleAlert, color: 'text-[#f87171]' },
+  waiting: { icon: Clock, color: 'text-[#fbbf24]' },
+  call: { icon: Phone, color: 'text-[#38bdf8]' },
+  meeting: { icon: Calendar, color: 'text-[#a78bfa]' },
+  followup: { icon: ListTodo, color: 'text-[#a594ff]' },
+  todo: { icon: ListTodo, color: 'text-neutral-400' },
 }
 
 function TaskRow({
@@ -331,27 +367,39 @@ function TaskRow({
   onToggle: () => void
   onDelete: () => void
 }) {
-  const Icon = task.kind === 'overdue' ? CircleAlert : task.kind === 'waiting' ? Clock : task.kind === 'call' ? Phone : task.kind === 'meeting' ? Calendar : task.kind === 'todo' ? CheckSquare : ListTodo
-  const iconColor =
-    task.kind === 'overdue'
-      ? 'text-[#f07a7a]'
-      : task.kind === 'waiting'
-        ? 'text-[#e8a93a]'
-        : 'text-[#7eb0ff]'
+  const { icon: Icon, color } = kindMeta[task.kind]
 
   return (
-    <section className={`${card} flex items-center gap-3 px-4 py-3 ${task.done ? 'opacity-55' : ''}`}>
-      <Icon size={18} className={`shrink-0 ${iconColor}`} />
+    <li className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/[0.03]">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={task.done ? 'Mark as not done' : 'Mark as done'}
+        className={`flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+          task.done
+            ? 'border-transparent bg-[#7c5cff] text-white'
+            : 'border-white/20 text-transparent hover:border-[#a594ff] hover:text-[#a594ff]'
+        }`}
+      >
+        <Check size={12} strokeWidth={3} />
+      </button>
       <div className="min-w-0 flex-1">
-        <p className={`text-[15px] ${task.done ? 'line-through' : ''}`}>{task.title}</p>
-        <p className="text-[13px] text-neutral-400">{task.detail}</p>
+        <p className={`truncate text-[14px] ${task.done ? 'text-neutral-500 line-through' : 'text-neutral-100'}`}>
+          {task.title}
+        </p>
+        <p className="mt-0.5 flex items-center gap-1.5 truncate text-[12px] text-neutral-500">
+          <Icon size={12} className={`shrink-0 ${color}`} />
+          {task.detail}
+        </p>
       </div>
-      <button type="button" onClick={onToggle} className={`${ghost} shrink-0 px-4`}>
-        {task.done ? task.doneLabel : task.actionLabel}
+      <button
+        type="button"
+        aria-label="Delete task"
+        onClick={onDelete}
+        className={`${iconBtn} size-7 opacity-0 group-hover:opacity-100`}
+      >
+        <X size={14} />
       </button>
-      <button type="button" aria-label="Delete task" onClick={onDelete} className="text-neutral-500">
-        <X size={16} />
-      </button>
-    </section>
+    </li>
   )
 }

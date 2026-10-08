@@ -4,7 +4,7 @@ html,
 body,
 #root {
   min-height: 100%;
-  background: #141415;
+  background: #07090f;
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
@@ -15,6 +15,31 @@ body {
 
 select,
 option {
-  background: #141415;
+  background: #0b0d14;
   color: #f5f5f5;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-rise {
+  animation: rise 0.35s ease-out both;
 }
