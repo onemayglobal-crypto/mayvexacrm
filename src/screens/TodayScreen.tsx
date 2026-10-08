@@ -12,9 +12,11 @@ import {
   Pencil,
   Phone,
   Plus,
+  Sparkles,
   X,
 } from 'lucide-react'
 import { GradeBadge } from '../components/GradeBadge'
+import { analyzeLeadWithAi } from '../lib/aiScoring'
 import { daysFrom, rupeesToLakhs } from '../lib/format'
 import { card, eyebrow, field, ghostBtn, iconBtn, initials, primaryBtn } from '../lib/ui'
 import { useCrm } from '../store/CrmContext'
@@ -64,6 +66,7 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
 
   const openLeads = store.leads.filter((lead) => lead.stage !== 'Won' && lead.stage !== 'Lost')
   const priority = [...openLeads].sort((a, b) => b.score - a.score)[0]
+  const priorityAi = priority ? analyzeLeadWithAi(priority) : null
 
   const bToA = store.leads.filter(
     (lead) => lead.grade === 'B' && lead.meetings >= 2 && !lead.objectionsOpen && lead.stage !== 'Won',
@@ -215,17 +218,36 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
                   </button>
                   <p className="truncate text-[13px] text-neutral-400">{priority.company || 'No company'}</p>
                 </div>
-                <GradeBadge grade={priority.grade} />
+                <div className="flex items-center gap-2">
+                  <GradeBadge grade={priority.grade} />
+                  {priorityAi && (
+                    <span className="flex items-center gap-1.5 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/15 px-2.5 py-1 text-[11px] font-semibold text-[#c4b5fd]">
+                      <Sparkles size={11} className="text-[#a594ff]" />
+                      {priorityAi.winProbability}% Win Prob
+                    </span>
+                  )}
+                </div>
               </div>
-              <p className="relative mt-6 text-[12px] font-medium tracking-[0.14em] text-[#a594ff] uppercase">
-                Your #1 move today
-              </p>
+              <div className="relative mt-6 flex items-center justify-between">
+                <p className="text-[12px] font-medium tracking-[0.14em] text-[#a594ff] uppercase">
+                  Your #1 move today
+                </p>
+                {priorityAi && (
+                  <span className="text-[11px] text-neutral-400">
+                    AI Score: <strong className="text-white">{priorityAi.aiScore}/100</strong>
+                  </span>
+                )}
+              </div>
               <h3 className="relative mt-1.5 text-[22px] font-semibold tracking-tight text-white">
                 {priority.nextAction || 'Follow up'}
               </h3>
-              {reason && (
+              {priorityAi?.summary ? (
+                <p className="relative mt-2 line-clamp-2 text-[14px] leading-relaxed text-neutral-300">
+                  {priorityAi.summary}
+                </p>
+              ) : reason ? (
                 <p className="relative mt-2 line-clamp-2 text-[14px] leading-relaxed text-neutral-400">{reason}</p>
-              )}
+              ) : null}
               <div className="relative mt-6 flex flex-wrap gap-2">
                 {priority.phone && (
                   <a href={`tel:${priority.phone}`} className={primaryBtn}>

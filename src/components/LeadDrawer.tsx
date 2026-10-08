@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Mail, MessageCircle, Phone, X } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Copy, Mail, MessageCircle, Phone, Sparkles, X } from 'lucide-react'
+import { analyzeLeadWithAi } from '../lib/aiScoring'
 import { rupeesToLakhs } from '../lib/format'
 import { ghostBtn, iconBtn, initials, stageColor } from '../lib/ui'
 import { useCrm } from '../store/CrmContext'
@@ -19,11 +20,14 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
   const lead = store.leads.find((item) => item.id === leadId)
   const [draft, setDraft] = useState<LeadDraft>(blankDraft())
   const [syncedId, setSyncedId] = useState<string | null>(null)
+  const [copiedMsg, setCopiedMsg] = useState(false)
 
   if (lead && syncedId !== lead.id) {
     setSyncedId(lead.id)
     setDraft(draftFromLead(lead))
   }
+
+  const ai = useMemo(() => (lead ? analyzeLeadWithAi(lead) : null), [lead])
 
   if (!leadId || !lead) return null
 
@@ -78,7 +82,62 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
             </div>
           )}
         </div>
-        <div className="px-7 py-7">
+        <div className="px-7 py-7 space-y-6">
+          {ai && (
+            <div className="rounded-2xl border border-[#7c5cff]/30 bg-gradient-to-br from-[#121124] to-[#0c0d14] p-5">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="flex size-6 items-center justify-center rounded-lg bg-[#7c5cff]/20 text-[#a594ff]">
+                    <Sparkles size={13} />
+                  </span>
+                  <span className="text-[12px] font-semibold tracking-wider text-[#a594ff] uppercase">
+                    AI Lead Intelligence
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md border border-[#7c5cff]/30 bg-[#7c5cff]/15 px-2 py-0.5 text-[11px] font-bold text-white">
+                    Score: {ai.aiScore}/100
+                  </span>
+                  <span
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                      ai.winProbability >= 70
+                        ? 'bg-[#34d399]/20 text-[#6ee7b7]'
+                        : 'bg-[#fbbf24]/20 text-[#fcd34d]'
+                    }`}
+                  >
+                    {ai.winProbability}% Win Prob
+                  </span>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[13px] leading-relaxed text-neutral-200">
+                {ai.summary}
+              </p>
+
+              <div className="mt-4 rounded-xl border border-white/[0.05] bg-black/40 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-neutral-400">
+                    Drafted {ai.personalizedMessage.channel} Follow-up
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(ai.personalizedMessage.body)
+                      setCopiedMsg(true)
+                      setTimeout(() => setCopiedMsg(false), 2000)
+                    }}
+                    className="flex items-center gap-1 text-[11px] text-[#a594ff] hover:text-white"
+                  >
+                    <Copy size={11} /> {copiedMsg ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-neutral-300">
+                  {ai.personalizedMessage.body}
+                </p>
+              </div>
+            </div>
+          )}
+
           <LeadForm
             value={draft}
             onChange={setDraft}

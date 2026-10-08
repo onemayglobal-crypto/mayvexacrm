@@ -4,6 +4,8 @@ import { CaptureSheet } from './components/CaptureSheet'
 import { LeadDrawer } from './components/LeadDrawer'
 import { Sidebar } from './components/Sidebar'
 import { CaptureScreen } from './screens/CaptureScreen'
+import { AiSummariesScreen } from './screens/AiSummariesScreen'
+import { CommandModeScreen } from './screens/CommandModeScreen'
 import { InsightsScreen } from './screens/InsightsScreen'
 import { LoginScreen } from './screens/LoginScreen'
 import { PipelineScreen } from './screens/PipelineScreen'
@@ -101,6 +103,16 @@ function Shell({ onLogout }: { onLogout: () => void }) {
           )}
           {tab === 'insights' && (
             <InsightsScreen onOpenLead={openLead} onPipeline={() => setTab('pipeline')} />
+          )}
+          {tab === 'ai' && (
+            <AiSummariesScreen
+              onOpenLead={openLead}
+              onPipeline={() => setTab('pipeline')}
+              onCommandMode={() => setTab('command')}
+            />
+          )}
+          {tab === 'command' && (
+            <CommandModeScreen onOpenLead={openLead} onPipeline={() => setTab('pipeline')} />
           )}
         </main>
         

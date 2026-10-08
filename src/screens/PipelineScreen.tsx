@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
-import { CalendarClock, Check, MessageCircle, Phone, Plus, Search, X } from 'lucide-react'
+import { CalendarClock, Check, MessageCircle, Phone, Plus, Search, Sparkles, X } from 'lucide-react'
+import { analyzeLeadWithAi } from '../lib/aiScoring'
 import { GradeBadge } from '../components/GradeBadge'
 import { TypeTag } from '../components/TypeTag'
 import { daysFrom, rupeesToLakhs } from '../lib/format'
@@ -248,6 +249,7 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
   const isLost = lead.stage === 'Lost'
   const since = daysFrom(lead.lastContact)
   const lastSeen = since == null ? null : Math.max(0, -since)
+  const ai = analyzeLeadWithAi(lead)
 
   return (
     <article
@@ -292,12 +294,12 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-semibold text-neutral-100">{rupeesToLakhs(lead.value)}</span>
-          <span className="flex items-center gap-1 text-[11px] text-neutral-500" title="Lead score">
-            <span
-              className="size-1.5 rounded-full"
-              style={{ background: lead.score >= 75 ? '#34d399' : lead.score >= 50 ? '#fbbf24' : '#64748b' }}
-            />
-            {lead.score}
+          <span
+            className="flex items-center gap-1 rounded bg-[#7c5cff]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[#c4b5fd]"
+            title={`AI Win Probability: ${ai.winProbability}% (Score: ${ai.aiScore}/100)`}
+          >
+            <Sparkles size={10} className="text-[#a594ff]" />
+            {ai.winProbability}%
           </span>
         </div>
         <div className="flex gap-1.5">

@@ -1,10 +1,12 @@
-import { BarChart3, Bell, House, Kanban, LogOut, Plus } from 'lucide-react'
+import { BarChart3, Bell, House, Kanban, LogOut, Plus, Sparkles, Terminal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Tab } from '../types'
 
-const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
+const tabs: { id: Tab; label: string; icon: LucideIcon; badge?: string }[] = [
   { id: 'today', label: 'Today', icon: House },
   { id: 'pipeline', label: 'Pipeline', icon: Kanban },
+  { id: 'ai', label: 'AI Summaries', icon: Sparkles, badge: 'Agentic' },
+  { id: 'command', label: 'Command Mode', icon: Terminal, badge: 'Killer' },
   { id: 'insights', label: 'Insights', icon: BarChart3 },
 ]
 
@@ -48,7 +50,7 @@ export function Sidebar({ active, onChange, unread, onBell, onLogout }: SidebarP
       </div>
 
       <nav className="mt-6 flex flex-1 flex-col gap-1 px-4">
-        {tabs.map(({ id, label, icon: Icon }) => {
+        {tabs.map(({ id, label, icon: Icon, badge }) => {
           const isActive = active === id
           return (
             <button
@@ -65,7 +67,12 @@ export function Sidebar({ active, onChange, unread, onBell, onLogout }: SidebarP
                 <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[#7c5cff]" />
               )}
               <Icon size={18} strokeWidth={1.8} className={isActive ? 'text-[#a594ff]' : ''} />
-              {label}
+              <span className="flex-1 truncate">{label}</span>
+              {badge && (
+                <span className="rounded-md border border-[#7c5cff]/30 bg-[#7c5cff]/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-[#c4b5fd] uppercase">
+                  {badge}
+                </span>
+              )}
             </button>
           )
         })}

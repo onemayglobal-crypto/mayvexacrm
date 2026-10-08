@@ -1,6 +1,6 @@
 export type Grade = 'A+' | 'A' | 'B' | 'C'
 export type Stage = 'A+' | 'B+' | 'C+' | 'Proposal' | 'Decision' | 'Won' | 'Lost'
-export type Tab = 'today' | 'pipeline' | 'capture' | 'insights'
+export type Tab = 'today' | 'pipeline' | 'ai' | 'command' | 'insights' | 'capture'
 export type TaskKind = 'overdue' | 'waiting' | 'followup' | 'call' | 'meeting' | 'todo'
 
 export const STAGES: Stage[] = ['A+', 'B+', 'C+', 'Proposal', 'Decision', 'Won', 'Lost']
