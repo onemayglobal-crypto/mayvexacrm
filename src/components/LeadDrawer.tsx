@@ -44,7 +44,12 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
               {initials(lead.name)}
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="truncate text-[20px] font-semibold tracking-tight text-white">{lead.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="truncate text-[20px] font-semibold tracking-tight text-white">{lead.name}</h2>
+                {lead.engagementFlag === 'green' && <span title="Genuine Interest">🟢</span>}
+                {lead.engagementFlag === 'orange' && <span title="Neutral / Postponed">🟠</span>}
+                {lead.engagementFlag === 'red' && <span title="Low Interest / Fake Postpone">🔴</span>}
+              </div>
               <p className="truncate text-[13px] text-neutral-400">{lead.company || 'No company'}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-neutral-400">
                 <TypeTag type={inferLeadType(lead)} />
@@ -137,6 +142,70 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
               </div>
             </div>
           )}
+
+          {/* Engagement & Feedback Section */}
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[12px] font-semibold tracking-wider text-neutral-400 uppercase">
+                Interaction Feedback
+              </span>
+              {(lead.postponements ?? 0) > 0 && (
+                <span className="rounded-md bg-[#f87171]/10 px-2 py-0.5 text-[11px] font-medium text-[#fca5a5]">
+                  {lead.postponements} Postponement{(lead.postponements ?? 0) > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  updateLead(lead.id, { engagementFlag: 'green', postponements: 0, score: Math.min(99, lead.score + 10) })
+                }}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-all ${
+                  lead.engagementFlag === 'green'
+                    ? 'border-[#34d399]/50 bg-[#34d399]/10 text-[#34d399]'
+                    : 'border-white/[0.05] bg-black/20 text-neutral-400 hover:border-[#34d399]/30 hover:text-[#34d399]'
+                }`}
+              >
+                <span className="text-[20px]">🟢</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide">Genuine</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  updateLead(lead.id, { engagementFlag: 'orange', postponements: (lead.postponements || 0) + 1 })
+                }}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-all ${
+                  lead.engagementFlag === 'orange'
+                    ? 'border-[#fbbf24]/50 bg-[#fbbf24]/10 text-[#fbbf24]'
+                    : 'border-white/[0.05] bg-black/20 text-neutral-400 hover:border-[#fbbf24]/30 hover:text-[#fbbf24]'
+                }`}
+              >
+                <span className="text-[20px]">🟠</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide">Neutral</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  updateLead(lead.id, { engagementFlag: 'red', postponements: (lead.postponements || 0) + 1, score: Math.max(1, lead.score - 15) })
+                }}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-all ${
+                  lead.engagementFlag === 'red'
+                    ? 'border-[#f87171]/50 bg-[#f87171]/10 text-[#f87171]'
+                    : 'border-white/[0.05] bg-black/20 text-neutral-400 hover:border-[#f87171]/30 hover:text-[#f87171]'
+                }`}
+              >
+                <span className="text-[20px]">🔴</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide">Low Interest</span>
+              </button>
+            </div>
+            <p className="mt-3 text-[11px] text-neutral-500 text-center">
+              Flagging updates AI scoring and prioritizes genuine prospects.
+            </p>
+          </div>
 
           <LeadForm
             value={draft}

@@ -209,13 +209,18 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
                   {initials(priority.name)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <button
-                    type="button"
-                    onClick={() => onOpenLead(priority.id)}
-                    className="truncate text-[17px] font-medium text-white hover:underline"
-                  >
-                    {priority.name}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onOpenLead(priority.id)}
+                      className="truncate text-[17px] font-medium text-white hover:underline"
+                    >
+                      {priority.name}
+                    </button>
+                    {priority.engagementFlag === 'green' && <span title="Genuine Interest" className="text-[12px]">🟢</span>}
+                    {priority.engagementFlag === 'orange' && <span title="Neutral / Postponed" className="text-[12px]">🟠</span>}
+                    {priority.engagementFlag === 'red' && <span title="Low Interest / Fake Postpone" className="text-[12px]">🔴</span>}
+                  </div>
                   <p className="truncate text-[13px] text-neutral-400">{priority.company || 'No company'}</p>
                 </div>
                 <div className="flex items-center gap-2">

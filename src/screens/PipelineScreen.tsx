@@ -265,7 +265,12 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-[14px] font-medium text-white">{lead.name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate text-[14px] font-medium text-white">{lead.name}</p>
+            {lead.engagementFlag === 'green' && <span title="Genuine Interest" className="text-[12px]">🟢</span>}
+            {lead.engagementFlag === 'orange' && <span title="Neutral / Postponed" className="text-[12px]">🟠</span>}
+            {lead.engagementFlag === 'red' && <span title="Low Interest / Fake Postpone" className="text-[12px]">🔴</span>}
+          </div>
           <p className="truncate text-[12px] text-neutral-500">{lead.company || 'No company'}</p>
         </div>
         <GradeBadge grade={lead.grade} />

@@ -123,7 +123,7 @@ export function DigitalCardsScreen({ onOpenLead }: DigitalCardsScreenProps) {
                 <div className="pointer-events-none absolute -inset-[200%] rotate-45 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-[100%] group-hover:opacity-100" />
 
                 {/* Name & Company */}
-                <div className="relative z-10 flex items-start justify-between">
+                <div className="relative z-10 flex items-start justify-between rounded-2xl bg-black/20 border border-white/5 p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
                   <div>
                     <h3 className="text-[22px] font-bold text-white tracking-tight drop-shadow-sm">{lead.name}</h3>
                     <p className="mt-1.5 flex items-center gap-2 text-[13px] font-medium text-neutral-300">
@@ -137,16 +137,16 @@ export function DigitalCardsScreen({ onOpenLead }: DigitalCardsScreenProps) {
                 </div>
 
                 {/* Contact Info */}
-                <div className="relative z-10 mt-8 space-y-4">
+                <div className="relative z-10 mt-6 space-y-3 rounded-2xl bg-black/20 border border-white/5 p-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
                   <div className="flex items-center gap-3.5 text-[14px] text-neutral-200">
-                    <div className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_5px_rgba(0,0,0,0.2)] backdrop-blur-sm">
-                      <Phone size={13} />
+                    <div className="flex size-7 items-center justify-center rounded-full bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_5px_rgba(0,0,0,0.2)] backdrop-blur-sm">
+                      <Phone size={12} />
                     </div>
                     <span className="font-medium tracking-wide drop-shadow-sm">{lead.phone}</span>
                   </div>
                   <div className="flex items-center gap-3.5 text-[14px] text-neutral-200">
-                    <div className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_5px_rgba(0,0,0,0.2)] backdrop-blur-sm">
-                      <Mail size={13} />
+                    <div className="flex size-7 items-center justify-center rounded-full bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_5px_rgba(0,0,0,0.2)] backdrop-blur-sm">
+                      <Mail size={12} />
                     </div>
                     <span className="truncate font-medium drop-shadow-sm">{lead.email}</span>
                   </div>

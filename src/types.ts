@@ -35,6 +35,8 @@ export const GRADE_WEIGHT: Record<Grade, number> = {
   C: 0.2,
 }
 
+export type EngagementFlag = 'green' | 'orange' | 'red' | 'none'
+
 export interface Lead {
   id: string
   name: string
@@ -53,6 +55,8 @@ export interface Lead {
   proposalExpires?: string
   meetings: number
   objectionsOpen: boolean
+  engagementFlag?: EngagementFlag
+  postponements?: number
   createdAt: string
   closedAt?: string
 }
@@ -102,4 +106,6 @@ export const EMPTY_LEAD: Omit<Lead, 'id' | 'createdAt'> = {
   notes: '',
   meetings: 0,
   objectionsOpen: false,
+  engagementFlag: 'none',
+  postponements: 0,
 }
