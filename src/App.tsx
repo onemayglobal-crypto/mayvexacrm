@@ -7,6 +7,7 @@ import { CaptureScreen } from './screens/CaptureScreen'
 import { AiSummariesScreen } from './screens/AiSummariesScreen'
 import { CommandModeScreen } from './screens/CommandModeScreen'
 import { InsightsScreen } from './screens/InsightsScreen'
+import { DigitalCardsScreen } from './screens/DigitalCardsScreen'
 import { LoginScreen } from './screens/LoginScreen'
 import { PipelineScreen } from './screens/PipelineScreen'
 import { TodayScreen } from './screens/TodayScreen'
@@ -113,6 +114,9 @@ function Shell({ onLogout }: { onLogout: () => void }) {
           )}
           {tab === 'command' && (
             <CommandModeScreen onOpenLead={openLead} onPipeline={() => setTab('pipeline')} />
+          )}
+          {tab === 'cards' && (
+            <DigitalCardsScreen onOpenLead={openLead} />
           )}
         </main>
         

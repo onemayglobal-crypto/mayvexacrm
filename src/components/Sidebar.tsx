@@ -1,4 +1,4 @@
-import { BarChart3, Bell, House, Kanban, LogOut, Plus, Sparkles, Terminal } from 'lucide-react'
+import { BarChart3, Bell, Contact2, House, Kanban, LogOut, Plus, Sparkles, Terminal } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Tab } from '../types'
 
@@ -8,6 +8,7 @@ const tabs: { id: Tab; label: string; icon: LucideIcon; badge?: string }[] = [
   { id: 'ai', label: 'AI Summaries', icon: Sparkles, badge: 'Agentic' },
   { id: 'command', label: 'Command Mode', icon: Terminal, badge: 'Killer' },
   { id: 'insights', label: 'Insights', icon: BarChart3 },
+  { id: 'cards', label: 'Digital Cards', icon: Contact2 },
 ]
 
 interface SidebarProps {
