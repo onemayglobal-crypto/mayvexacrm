@@ -69,33 +69,11 @@ export function DigitalCardsScreen({ onOpenLead }: DigitalCardsScreenProps) {
       {/* Grid of Cards */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {filteredLeads.map((lead) => {
-          // Determine gradient colors based on Grade for a multi-color liquid effect
-          let gradientFrom = 'from-[#7c5cff]'
-          let gradientVia = 'via-[#4a00e0]'
-          let gradientTo = 'to-[#8e2de2]'
-          let glowColor = 'bg-[#7c5cff]/30'
-
-          if (lead.grade === 'A+') {
-            gradientFrom = 'from-[#11998e]'
-            gradientVia = 'via-[#38ef7d]'
-            gradientTo = 'to-[#11998e]'
-            glowColor = 'bg-[#38ef7d]/30'
-          } else if (lead.grade === 'A') {
-            gradientFrom = 'from-[#2193b0]'
-            gradientVia = 'via-[#6dd5ed]'
-            gradientTo = 'to-[#2193b0]'
-            glowColor = 'bg-[#6dd5ed]/30'
-          } else if (lead.grade === 'B') {
-            gradientFrom = 'from-[#f12711]'
-            gradientVia = 'via-[#f5af19]'
-            gradientTo = 'to-[#f12711]'
-            glowColor = 'bg-[#f5af19]/30'
-          } else if (lead.grade === 'C') {
-            gradientFrom = 'from-[#8e9eab]'
-            gradientVia = 'via-[#eef2f3]'
-            gradientTo = 'to-[#8e9eab]'
-            glowColor = 'bg-[#eef2f3]/30'
-          }
+          // Vibrant, high-contrast golden yellow theme
+          const gradientFrom = 'from-[#FF9900]' // Deep Vibrant Gold
+          const gradientVia = 'via-[#FFD700]' // Pure Bright Gold
+          const gradientTo = 'to-[#FF9900]' // Deep Vibrant Gold
+          const glowColor = 'bg-[#FFD700]/50' // Stronger, brighter glow
 
           return (
             <div
@@ -155,10 +133,15 @@ export function DigitalCardsScreen({ onOpenLead }: DigitalCardsScreenProps) {
                 {/* Bottom Section */}
                 <div className="relative z-10 mt-6 flex items-end justify-between border-t border-white/10 pt-5">
                   <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center gap-2">
-                      <GradeBadge grade={lead.grade} />
-                      {lead.type && <TypeTag type={lead.type} />}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <GradeBadge grade={lead.grade} />
+                    {lead.type && <TypeTag type={lead.type} />}
+                    {lead.source && (
+                      <span className="truncate rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-neutral-300 ring-1 ring-white/10">
+                        {lead.source}
+                      </span>
+                    )}
+                  </div>
                     <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.15em] drop-shadow-sm">
                       Success Rate &amp; Category
                     </span>

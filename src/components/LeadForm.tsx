@@ -32,6 +32,7 @@ export function draftFromLead(lead: Lead): LeadDraft {
     score: lead.score,
     stage: lead.stage,
     type: inferLeadType(lead),
+    source: lead.source || '',
     nextAction: lead.nextAction,
     notes: lead.notes,
     lastContact: lead.lastContact,
@@ -154,6 +155,18 @@ export function LeadForm({
             </div>
           </div>
         )}
+        
+        {/* New Field: Lead Source */}
+        <label className="block">
+          <span className={fieldLabel}>Lead Source</span>
+          <input
+            className={field}
+            value={value.source || ''}
+            onChange={(e) => set('source', e.target.value)}
+            placeholder="e.g. CTC Expo, Website, Referral from John"
+          />
+        </label>
+
         {showStage && (
           <div>
             <span className={fieldLabel}>Stage</span>

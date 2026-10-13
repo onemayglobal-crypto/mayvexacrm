@@ -21,6 +21,7 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
   const [dragOver, setDragOver] = useState<Stage | null>(null)
   const [grade, setGrade] = useState<Grade | 'All'>('All')
   const [kind, setKind] = useState<LeadType | 'All'>('All')
+  const [sourceFilter, setSourceFilter] = useState<string>('All')
   const [filterOpen, setFilterOpen] = useState(false)
 
   const filtered = useMemo(() => {
@@ -28,10 +29,11 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
     return store.leads.filter((lead) => {
       if (grade !== 'All' && lead.grade !== grade) return false
       if (kind !== 'All' && inferLeadType(lead) !== kind) return false
+      if (sourceFilter !== 'All' && (lead.source || 'Unknown') !== sourceFilter) return false
       if (!q) return true
-      return [lead.name, lead.company, lead.nextAction, lead.notes].join(' ').toLowerCase().includes(q)
+      return [lead.name, lead.company, lead.nextAction, lead.notes, lead.source].join(' ').toLowerCase().includes(q)
     })
-  }, [store.leads, query, grade, kind])
+  }, [store.leads, query, grade, kind, sourceFilter])
 
   const typeOptions: { value: LeadType | 'All'; count: number }[] = [
     { value: 'All', count: store.leads.length },
@@ -49,6 +51,20 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
       count: store.leads.filter((lead) => lead.grade === g).length,
     })),
   ]
+
+  const sourceOptions = useMemo(() => {
+    const counts: Record<string, number> = {}
+    store.leads.forEach((l) => {
+      const s = l.source?.trim() || 'Unknown'
+      counts[s] = (counts[s] || 0) + 1
+    })
+    return [
+      { value: 'All', label: 'All sources', count: store.leads.length },
+      ...Object.entries(counts)
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((a, b) => b.count - a.count),
+    ]
+  }, [store.leads])
 
   const open = store.leads.filter((lead) => lead.stage !== 'Won' && lead.stage !== 'Lost')
   const openValue = open.reduce((sum, lead) => sum + lead.value, 0)
@@ -93,6 +109,17 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
             >
               <span className="pl-1">Grade</span>
               <GradeBadge grade={grade} />
+              <X size={14} className="text-neutral-400" />
+            </button>
+          )}
+          {sourceFilter !== 'All' && (
+            <button
+              type="button"
+              onClick={() => setSourceFilter('All')}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#7c5cff]/40 bg-[#7c5cff]/10 pr-2.5 pl-3 text-[13px] text-neutral-200 hover:border-[#7c5cff]/70"
+              aria-label={`Clear source ${sourceFilter} filter`}
+            >
+              <span className="font-medium">{sourceFilter}</span>
               <X size={14} className="text-neutral-400" />
             </button>
           )}
@@ -176,6 +203,30 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
                         <GradeBadge grade={option.value} />
                       )}
                       <span className="flex-1">{option.label}</span>
+                      <span className="text-[12px] text-neutral-500">{option.count}</span>
+                      {active && <Check size={14} className="text-[#a594ff]" />}
+                    </button>
+                  )
+                })}
+                <div className="my-2 h-px bg-white/[0.06]" />
+                <p className="px-3 pt-1.5 pb-2 text-[11px] font-semibold tracking-[0.16em] text-neutral-500 uppercase">
+                  Filter by source
+                </p>
+                {sourceOptions.map((option) => {
+                  const active = sourceFilter === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setSourceFilter(option.value)
+                        setFilterOpen(false)
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] transition-colors ${
+                        active ? 'bg-white/[0.06] text-white' : 'text-neutral-300 hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <span className="flex-1 truncate">{option.label}</span>
                       <span className="text-[12px] text-neutral-500">{option.count}</span>
                       {active && <Check size={14} className="text-[#a594ff]" />}
                     </button>
@@ -276,8 +327,13 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
         <GradeBadge grade={lead.grade} />
       </div>
 
-      <div className="mt-2.5">
+      <div className="mt-2.5 flex items-center gap-2">
         <TypeTag type={inferLeadType(lead)} />
+        {lead.source && (
+          <span className="truncate rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+            {lead.source}
+          </span>
+        )}
       </div>
 
       {lead.nextAction && (

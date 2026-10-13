@@ -48,6 +48,7 @@ export interface Lead {
   score: number
   stage: Stage
   type?: LeadType
+  source?: string
   nextAction: string
   notes: string
   lastContact?: string
@@ -102,6 +103,7 @@ export const EMPTY_LEAD: Omit<Lead, 'id' | 'createdAt'> = {
   score: 50,
   stage: 'B+',
   type: 'lead',
+  source: '',
   nextAction: '',
   notes: '',
   meetings: 0,
