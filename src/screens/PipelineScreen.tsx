@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
-import { CalendarClock, Check, MessageCircle, Phone, Plus, Search, Sparkles, X } from 'lucide-react'
+import { CalendarClock, Check, MessageCircle, Phone, Plus, Search, Sparkles, X, LayoutDashboard, TableProperties } from 'lucide-react'
 import { analyzeLeadWithAi } from '../lib/aiScoring'
 import { GradeBadge } from '../components/GradeBadge'
 import { TypeTag } from '../components/TypeTag'
@@ -23,6 +23,7 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
   const [kind, setKind] = useState<LeadType | 'All'>('All')
   const [sourceFilter, setSourceFilter] = useState<string>('All')
   const [filterOpen, setFilterOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'board' | 'sheet'>('board')
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -89,6 +90,28 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-xl bg-white/[0.03] p-1 mr-2">
+            <button
+              onClick={() => setViewMode('board')}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+                viewMode === 'board'
+                  ? 'bg-[#7c5cff] text-white shadow-md'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <LayoutDashboard size={14} /> Board
+            </button>
+            <button
+              onClick={() => setViewMode('sheet')}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+                viewMode === 'sheet'
+                  ? 'bg-[#7c5cff] text-white shadow-md'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <TableProperties size={14} /> Sheet
+            </button>
+          </div>
           {kind !== 'All' && (
             <button
               type="button"
@@ -241,56 +264,125 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
         </div>
       </header>
 
-      <div className="-mx-2 flex min-h-0 flex-1 gap-3 overflow-x-auto px-2 pb-4">
-        {STAGES.map((stage) => {
-          const leads = filtered.filter((lead) => lead.stage === stage)
-          const value = leads.reduce((sum, lead) => sum + lead.value, 0)
-          const isOver = dragOver === stage
-          return (
-            <section
-              key={stage}
-              onDragOver={(e) => {
-                e.preventDefault()
-                if (dragOver !== stage) setDragOver(stage)
-              }}
-              onDragLeave={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null)
-              }}
-              onDrop={drop(stage)}
-              className={`flex w-[272px] shrink-0 flex-col rounded-2xl border transition-colors ${
-                isOver
-                  ? 'border-[#7c5cff]/50 bg-[#7c5cff]/[0.06]'
-                  : 'border-white/[0.04] bg-white/[0.015]'
-              }`}
-            >
-              <header className="flex items-center justify-between px-4 pt-4 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ background: stageColor[stage] }} />
-                  <h2 className="text-[14px] font-medium text-neutral-100">{stage}</h2>
-                  <span className="rounded-md bg-white/[0.06] px-1.5 text-[11px] font-medium text-neutral-400">
-                    {leads.length}
-                  </span>
-                </div>
-                <p className="text-[12px] text-neutral-500">{rupeesToLakhs(value)}</p>
-              </header>
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
-                {leads.map((lead) => (
-                  <LeadCard key={lead.id} lead={lead} onOpen={() => onOpenLead(lead.id)} />
-                ))}
-                {leads.length === 0 && (
-                  <div
-                    className={`flex h-24 items-center justify-center rounded-xl border border-dashed text-[12px] ${
-                      isOver ? 'border-[#7c5cff]/50 text-[#a594ff]' : 'border-white/[0.06] text-neutral-600'
-                    }`}
-                  >
-                    {isOver ? 'Drop to move here' : 'No deals'}
+      {viewMode === 'sheet' ? (
+        <div className="flex-1 overflow-auto rounded-xl border border-white/[0.06] bg-[#0e111a]">
+          <table className="w-full text-left text-[13px] text-neutral-300">
+            <thead className="sticky top-0 z-10 bg-[#151923] text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500 shadow-[0_1px_0_rgba(255,255,255,0.06)]">
+              <tr>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Company</th>
+                <th className="px-4 py-3 font-medium">Stage</th>
+                <th className="px-4 py-3 font-medium">Grade</th>
+                <th className="px-4 py-3 font-medium">Value</th>
+                <th className="px-4 py-3 font-medium">Type</th>
+                <th className="px-4 py-3 font-medium">Source</th>
+                <th className="px-4 py-3 font-medium">Next Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {filtered.map((lead) => (
+                <tr
+                  key={lead.id}
+                  onClick={() => onOpenLead(lead.id)}
+                  className="cursor-pointer transition-colors hover:bg-white/[0.02]"
+                >
+                  <td className="px-4 py-3 font-medium text-white">
+                    <div className="flex items-center gap-1.5">
+                      {lead.name}
+                      {lead.engagementFlag === 'green' && <span title="Genuine Interest" className="text-[12px]">🟢</span>}
+                      {lead.engagementFlag === 'orange' && <span title="Neutral / Postponed" className="text-[12px]">🟠</span>}
+                      {lead.engagementFlag === 'red' && <span title="Low Interest / Fake Postpone" className="text-[12px]">🔴</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">{lead.company || '-'}</td>
+                  <td className="px-4 py-3">
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-1.5 rounded-full" style={{ background: stageColor[lead.stage] }} />
+                      {lead.stage}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <GradeBadge grade={lead.grade} />
+                  </td>
+                  <td className="px-4 py-3 font-medium text-neutral-200">{rupeesToLakhs(lead.value)}</td>
+                  <td className="px-4 py-3">
+                    <TypeTag type={inferLeadType(lead)} />
+                  </td>
+                  <td className="px-4 py-3">
+                    {lead.source && (
+                      <span className="truncate rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
+                        {lead.source}
+                      </span>
+                    )}
+                    {!lead.source && '-'}
+                  </td>
+                  <td className="px-4 py-3 text-neutral-400">
+                    <span className="line-clamp-1">{lead.nextAction || '-'}</span>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-neutral-500">
+                    No leads found matching your filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="-mx-2 flex min-h-0 flex-1 gap-3 overflow-x-auto px-2 pb-4">
+          {STAGES.map((stage) => {
+            const leads = filtered.filter((lead) => lead.stage === stage)
+            const value = leads.reduce((sum, lead) => sum + lead.value, 0)
+            const isOver = dragOver === stage
+            return (
+              <section
+                key={stage}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  if (dragOver !== stage) setDragOver(stage)
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null)
+                }}
+                onDrop={drop(stage)}
+                className={`flex w-[272px] shrink-0 flex-col rounded-2xl border transition-colors ${
+                  isOver
+                    ? 'border-[#7c5cff]/50 bg-[#7c5cff]/[0.06]'
+                    : 'border-white/[0.04] bg-white/[0.015]'
+                }`}
+              >
+                <header className="flex items-center justify-between px-4 pt-4 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full" style={{ background: stageColor[stage] }} />
+                    <h2 className="text-[14px] font-medium text-neutral-100">{stage}</h2>
+                    <span className="rounded-md bg-white/[0.06] px-1.5 text-[11px] font-medium text-neutral-400">
+                      {leads.length}
+                    </span>
                   </div>
-                )}
-              </div>
-            </section>
-          )
-        })}
-      </div>
+                  <p className="text-[12px] text-neutral-500">{rupeesToLakhs(value)}</p>
+                </header>
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
+                  {leads.map((lead) => (
+                    <LeadCard key={lead.id} lead={lead} onOpen={() => onOpenLead(lead.id)} />
+                  ))}
+                  {leads.length === 0 && (
+                    <div
+                      className={`flex h-24 items-center justify-center rounded-xl border border-dashed text-[12px] ${
+                        isOver ? 'border-[#7c5cff]/50 text-[#a594ff]' : 'border-white/[0.06] text-neutral-600'
+                      }`}
+                    >
+                      {isOver ? 'Drop to move here' : 'No deals'}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ArrowRight,
   ArrowUpRight,
   Calendar,
   Check,
+  ChevronLeft,
+  ChevronRight,
   CircleAlert,
   Clock,
   Flame,
@@ -65,7 +67,19 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
   const onTrack = monthlyAchieved >= store.settings.monthlyGoal * (now.getDate() / 30)
 
   const openLeads = store.leads.filter((lead) => lead.stage !== 'Won' && lead.stage !== 'Lost')
-  const priority = [...openLeads].sort((a, b) => b.score - a.score)[0]
+  const priorities = [...openLeads].sort((a, b) => b.score - a.score).slice(0, 5)
+  
+  const [currentMoveIndex, setCurrentMoveIndex] = useState(0)
+
+  useEffect(() => {
+    if (priorities.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrentMoveIndex((prev) => (prev + 1) % priorities.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [priorities.length])
+
+  const priority = priorities[currentMoveIndex]
   const priorityAi = priority ? analyzeLeadWithAi(priority) : null
 
   const bToA = store.leads.filter(
@@ -204,11 +218,32 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
           {priority ? (
             <section className="relative overflow-hidden rounded-3xl border border-[#7c5cff]/25 bg-gradient-to-br from-[#121a33] via-[#0e1220] to-[#0b0d14] p-6">
               <div className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-[#7c5cff]/15 blur-3xl" />
+              
+              {/* Slider Controls */}
+              {priorities.length > 1 && (
+                <div className="absolute top-4 right-4 z-10 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMoveIndex((prev) => (prev - 1 + priorities.length) % priorities.length)}
+                    className="flex size-7 items-center justify-center rounded-full bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentMoveIndex((prev) => (prev + 1) % priorities.length)}
+                    className="flex size-7 items-center justify-center rounded-full bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
               <div className="relative flex items-center gap-3">
                 <span className="flex size-11 items-center justify-center rounded-2xl bg-white/[0.08] text-[14px] font-semibold text-white">
                   {initials(priority.name)}
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 pr-16">
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -226,7 +261,7 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
                 <div className="flex items-center gap-2">
                   <GradeBadge grade={priority.grade} />
                   {priorityAi && (
-                    <span className="flex items-center gap-1.5 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/15 px-2.5 py-1 text-[11px] font-semibold text-[#c4b5fd]">
+                    <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#7c5cff]/30 bg-[#7c5cff]/15 px-2.5 py-1 text-[11px] font-semibold text-[#c4b5fd]">
                       <Sparkles size={11} className="text-[#a594ff]" />
                       {priorityAi.winProbability}% Win Prob
                     </span>
@@ -235,7 +270,7 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
               </div>
               <div className="relative mt-6 flex items-center justify-between">
                 <p className="text-[12px] font-medium tracking-[0.14em] text-[#a594ff] uppercase">
-                  Your #1 move today
+                  Core 5 Move Today ({currentMoveIndex + 1}/{priorities.length})
                 </p>
                 {priorityAi && (
                   <span className="text-[11px] text-neutral-400">
@@ -253,25 +288,43 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
               ) : reason ? (
                 <p className="relative mt-2 line-clamp-2 text-[14px] leading-relaxed text-neutral-400">{reason}</p>
               ) : null}
-              <div className="relative mt-6 flex flex-wrap gap-2">
-                {priority.phone && (
-                  <a href={`tel:${priority.phone}`} className={primaryBtn}>
-                    <Phone size={15} /> Call
-                  </a>
+              <div className="relative mt-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap gap-2">
+                  {priority.phone && (
+                    <a href={`tel:${priority.phone}`} className={primaryBtn}>
+                      <Phone size={15} /> Call
+                    </a>
+                  )}
+                  {priority.phone && (
+                    <a
+                      href={`https://wa.me/${priority.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${priority.name.split(' ')[0]}, `)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={ghostBtn}
+                    >
+                      <MessageCircle size={15} /> WhatsApp
+                    </a>
+                  )}
+                  <button type="button" onClick={() => onOpenLead(priority.id)} className={ghostBtn}>
+                    View lead <ArrowRight size={15} />
+                  </button>
+                </div>
+                
+                {/* Dots indicator */}
+                {priorities.length > 1 && (
+                  <div className="flex gap-1.5">
+                    {priorities.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentMoveIndex(idx)}
+                        className={`size-2 rounded-full transition-all ${
+                          idx === currentMoveIndex ? 'bg-[#a594ff] w-4' : 'bg-white/20 hover:bg-white/40'
+                        }`}
+                        aria-label={`Go to move ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
                 )}
-                {priority.phone && (
-                  <a
-                    href={`https://wa.me/${priority.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${priority.name.split(' ')[0]}, `)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={ghostBtn}
-                  >
-                    <MessageCircle size={15} /> WhatsApp
-                  </a>
-                )}
-                <button type="button" onClick={() => onOpenLead(priority.id)} className={ghostBtn}>
-                  View lead <ArrowRight size={15} />
-                </button>
               </div>
             </section>
           ) : (
@@ -308,17 +361,24 @@ export function TodayScreen({ onOpenLead, onInsights }: TodayScreenProps) {
                 e.preventDefault()
                 submitTask()
               }}
-              className="flex items-center gap-2 border-b border-white/[0.05] px-3 pb-2"
+              className="flex items-start gap-2 border-b border-white/[0.05] px-3 pb-2 pt-2"
             >
-              <Plus size={16} className="shrink-0 text-neutral-500" />
-              <input
+              <Plus size={16} className="mt-2 shrink-0 text-neutral-500" />
+              <textarea
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    submitTask()
+                  }
+                }}
                 placeholder="Add a task and press Enter"
-                className="h-11 flex-1 bg-transparent text-[14px] text-neutral-100 outline-none placeholder:text-neutral-600"
+                rows={1}
+                className="min-h-[44px] max-h-[88px] flex-1 resize-none bg-transparent py-3 text-[14px] text-neutral-100 outline-none placeholder:text-neutral-600"
               />
               {taskTitle.trim() && (
-                <button type="submit" className="text-[13px] font-medium text-[#a594ff]">
+                <button type="submit" className="mt-2 text-[13px] font-medium text-[#a594ff]">
                   Add
                 </button>
               )}
@@ -411,7 +471,7 @@ function TaskRow({
         <Check size={12} strokeWidth={3} />
       </button>
       <div className="min-w-0 flex-1">
-        <p className={`truncate text-[14px] ${task.done ? 'text-neutral-500 line-through' : 'text-neutral-100'}`}>
+        <p className={`line-clamp-2 text-[14px] ${task.done ? 'text-neutral-500 line-through' : 'text-neutral-100'}`}>
           {task.title}
         </p>
         <p className="mt-0.5 flex items-center gap-1.5 truncate text-[12px] text-neutral-500">
