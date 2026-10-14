@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Copy, Mail, MessageCircle, Phone, Sparkles, X } from 'lucide-react'
+import { Copy, Mail, MessageCircle, Phone, Sparkles, X, GitCommitHorizontal, History } from 'lucide-react'
 import { analyzeLeadWithAi } from '../lib/aiScoring'
 import { rupeesToLakhs } from '../lib/format'
 import { ghostBtn, iconBtn, initials, stageColor } from '../lib/ui'
@@ -51,6 +51,23 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
                 {lead.engagementFlag === 'red' && <span title="Low Interest / Fake Postpone">🔴</span>}
               </div>
               <p className="truncate text-[13px] text-neutral-400">{lead.company || 'No company'}</p>
+              
+              {/* Assignment Info */}
+              {(lead.assignee || lead.escalatedBy) && (
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px]">
+                  {lead.assignee && (
+                    <p className="text-neutral-300">
+                      <span className="text-neutral-500">Handled by:</span> {lead.assignee}
+                    </p>
+                  )}
+                  {lead.escalatedBy && (
+                    <p className="text-neutral-300">
+                      <span className="text-neutral-500">Escalated by:</span> {lead.escalatedBy}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-neutral-400">
                 <TypeTag type={inferLeadType(lead)} />
                 <GradeBadge grade={lead.grade} />
@@ -205,6 +222,48 @@ export function LeadDrawer({ leadId, onClose }: LeadDrawerProps) {
             <p className="mt-3 text-[11px] text-neutral-500 text-center">
               Flagging updates AI scoring and prioritizes genuine prospects.
             </p>
+          </div>
+
+          {/* Lead Journey & Ownership Intelligence */}
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <History size={16} className="text-[#a594ff]" />
+              <h3 className="text-[14px] font-semibold text-white">Lead Journey & Ownership</h3>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="rounded-xl bg-black/20 p-3 border border-white/[0.05]">
+                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-1">Source Credit</p>
+                <p className="text-[13px] text-neutral-200 font-medium">{lead.sourceCredit || 'Unassigned'}</p>
+                <p className="text-[10px] text-neutral-500 mt-1">Brought prospect into CRM</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3 border border-white/[0.05]">
+                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-1">Closing Credit</p>
+                <p className="text-[13px] text-neutral-200 font-medium">{lead.closingCredit || 'Unassigned'}</p>
+                <p className="text-[10px] text-neutral-500 mt-1">Secured the deal</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Follow-up Contribution & History</p>
+              <div className="relative pl-3 border-l border-white/[0.1]">
+                {lead.history && lead.history.length > 0 ? (
+                  lead.history.map((event, idx) => (
+                    <div key={event.id} className="mb-4 last:mb-0 relative">
+                      <span className="absolute -left-[17px] top-1 flex size-2 items-center justify-center rounded-full bg-[#7c5cff]" />
+                      <p className="text-[13px] text-neutral-200">{event.description}</p>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-500">
+                        <span className="font-medium text-[#c4b5fd]">{event.actor}</span>
+                        <span>•</span>
+                        <span>{new Date(event.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-[12px] text-neutral-500 italic">No recorded history yet.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <LeadForm

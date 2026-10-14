@@ -37,6 +37,14 @@ export const GRADE_WEIGHT: Record<Grade, number> = {
 
 export type EngagementFlag = 'green' | 'orange' | 'red' | 'none'
 
+export interface LeadEvent {
+  id: string
+  type: 'created' | 'stage_change' | 'interaction' | 'assigned' | 'escalated' | 'closed' | 'note'
+  description: string
+  actor: string
+  timestamp: string
+}
+
 export interface Lead {
   id: string
   name: string
@@ -49,6 +57,11 @@ export interface Lead {
   stage: Stage
   type?: LeadType
   source?: string
+  assignee?: string
+  escalatedBy?: string
+  sourceCredit?: string
+  closingCredit?: string
+  history?: LeadEvent[]
   nextAction: string
   notes: string
   lastContact?: string
@@ -104,6 +117,11 @@ export const EMPTY_LEAD: Omit<Lead, 'id' | 'createdAt'> = {
   stage: 'B+',
   type: 'lead',
   source: '',
+  assignee: '',
+  escalatedBy: '',
+  sourceCredit: '',
+  closingCredit: '',
+  history: [],
   nextAction: '',
   notes: '',
   meetings: 0,

@@ -22,6 +22,7 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
   const [grade, setGrade] = useState<Grade | 'All'>('All')
   const [kind, setKind] = useState<LeadType | 'All'>('All')
   const [sourceFilter, setSourceFilter] = useState<string>('All')
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('All')
   const [filterOpen, setFilterOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'board' | 'sheet'>('board')
 
@@ -31,10 +32,11 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
       if (grade !== 'All' && lead.grade !== grade) return false
       if (kind !== 'All' && inferLeadType(lead) !== kind) return false
       if (sourceFilter !== 'All' && (lead.source || 'Unknown') !== sourceFilter) return false
+      if (assigneeFilter !== 'All' && (lead.assignee || 'Unassigned') !== assigneeFilter) return false
       if (!q) return true
-      return [lead.name, lead.company, lead.nextAction, lead.notes, lead.source].join(' ').toLowerCase().includes(q)
+      return [lead.name, lead.company, lead.nextAction, lead.notes, lead.source, lead.assignee, lead.escalatedBy].join(' ').toLowerCase().includes(q)
     })
-  }, [store.leads, query, grade, kind, sourceFilter])
+  }, [store.leads, query, grade, kind, sourceFilter, assigneeFilter])
 
   const typeOptions: { value: LeadType | 'All'; count: number }[] = [
     { value: 'All', count: store.leads.length },
@@ -61,6 +63,20 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
     })
     return [
       { value: 'All', label: 'All sources', count: store.leads.length },
+      ...Object.entries(counts)
+        .map(([value, count]) => ({ value, label: value, count }))
+        .sort((a, b) => b.count - a.count),
+    ]
+  }, [store.leads])
+
+  const assigneeOptions = useMemo(() => {
+    const counts: Record<string, number> = {}
+    store.leads.forEach((l) => {
+      const s = l.assignee?.trim() || 'Unassigned'
+      counts[s] = (counts[s] || 0) + 1
+    })
+    return [
+      { value: 'All', label: 'All handlers', count: store.leads.length },
       ...Object.entries(counts)
         .map(([value, count]) => ({ value, label: value, count }))
         .sort((a, b) => b.count - a.count),
@@ -143,6 +159,17 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
               aria-label={`Clear source ${sourceFilter} filter`}
             >
               <span className="font-medium">{sourceFilter}</span>
+              <X size={14} className="text-neutral-400" />
+            </button>
+          )}
+          {assigneeFilter !== 'All' && (
+            <button
+              type="button"
+              onClick={() => setAssigneeFilter('All')}
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#7c5cff]/40 bg-[#7c5cff]/10 pr-2.5 pl-3 text-[13px] text-neutral-200 hover:border-[#7c5cff]/70"
+              aria-label={`Clear handler ${assigneeFilter} filter`}
+            >
+              <span className="font-medium">{assigneeFilter}</span>
               <X size={14} className="text-neutral-400" />
             </button>
           )}
@@ -255,6 +282,30 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
                     </button>
                   )
                 })}
+                <div className="my-2 h-px bg-white/[0.06]" />
+                <p className="px-3 pt-1.5 pb-2 text-[11px] font-semibold tracking-[0.16em] text-neutral-500 uppercase">
+                  Filter by handler
+                </p>
+                {assigneeOptions.map((option) => {
+                  const active = assigneeFilter === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setAssigneeFilter(option.value)
+                        setFilterOpen(false)
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] transition-colors ${
+                        active ? 'bg-white/[0.06] text-white' : 'text-neutral-300 hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <span className="flex-1 truncate">{option.label}</span>
+                      <span className="text-[12px] text-neutral-500">{option.count}</span>
+                      {active && <Check size={14} className="text-[#a594ff]" />}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -276,6 +327,7 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
                 <th className="px-4 py-3 font-medium">Value</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Source</th>
+                <th className="px-4 py-3 font-medium">Handler</th>
                 <th className="px-4 py-3 font-medium">Next Action</th>
               </tr>
             </thead>
@@ -315,6 +367,14 @@ export function PipelineScreen({ onOpenLead, onCapture }: PipelineScreenProps) {
                       </span>
                     )}
                     {!lead.source && '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {lead.assignee && (
+                      <span className="truncate rounded-md bg-[#7c5cff]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#c4b5fd]">
+                        {lead.assignee}
+                      </span>
+                    )}
+                    {!lead.assignee && '-'}
                   </td>
                   <td className="px-4 py-3 text-neutral-400">
                     <span className="line-clamp-1">{lead.nextAction || '-'}</span>
@@ -419,11 +479,16 @@ function LeadCard({ lead, onOpen }: { lead: Lead; onOpen: () => void }) {
         <GradeBadge grade={lead.grade} />
       </div>
 
-      <div className="mt-2.5 flex items-center gap-2">
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">
         <TypeTag type={inferLeadType(lead)} />
         {lead.source && (
           <span className="truncate rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium text-neutral-400">
             {lead.source}
+          </span>
+        )}
+        {lead.assignee && (
+          <span className="truncate rounded-md bg-[#7c5cff]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#c4b5fd]">
+            {lead.assignee}
           </span>
         )}
       </div>

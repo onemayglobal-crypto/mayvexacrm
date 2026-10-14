@@ -52,11 +52,21 @@ export function CrmProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CrmContextValue>(() => {
     const addLead = (input: Omit<Lead, 'id' | 'createdAt'>) => {
+      const now = new Date().toISOString()
       const lead: Lead = {
         ...input,
         id: uid('lead'),
-        createdAt: new Date().toISOString(),
+        createdAt: now,
         score: Math.min(99, Math.max(1, Math.round(input.score))),
+        history: [
+          {
+            id: uid('event'),
+            type: 'created',
+            description: `Lead created in stage ${input.stage}`,
+            actor: input.assignee || 'System',
+            timestamp: now,
+          },
+        ],
       }
       const followUp = taskFromLead(lead)
       setStore((prev) => ({
@@ -82,8 +92,46 @@ export function CrmProvider({ children }: { children: ReactNode }) {
         leads: prev.leads.map((lead) => {
           if (lead.id !== id) return lead
           const next = { ...lead, ...patch }
+          
+          const newEvents = []
+          const now = new Date().toISOString()
+          const actor = next.assignee || 'System'
+
+          if (patch.stage && patch.stage !== lead.stage) {
+            newEvents.push({
+              id: uid('event'),
+              type: patch.stage === 'Won' || patch.stage === 'Lost' ? 'closed' : 'stage_change',
+              description: `Moved from ${lead.stage} to ${patch.stage}`,
+              actor,
+              timestamp: now,
+            })
+          }
+          if (patch.assignee && patch.assignee !== lead.assignee) {
+            newEvents.push({
+              id: uid('event'),
+              type: 'assigned',
+              description: `Assigned to ${patch.assignee}`,
+              actor: patch.assignee,
+              timestamp: now,
+            })
+          }
+          if (patch.escalatedBy && patch.escalatedBy !== lead.escalatedBy) {
+            newEvents.push({
+              id: uid('event'),
+              type: 'escalated',
+              description: `Escalated by ${patch.escalatedBy}`,
+              actor: patch.escalatedBy,
+              timestamp: now,
+            })
+          }
+
+          if (newEvents.length > 0) {
+            next.history = [...(next.history || []), ...newEvents]
+          }
+
           if (patch.stage === 'Won' && lead.stage !== 'Won') {
-            next.closedAt = new Date().toISOString()
+            next.closedAt = now
+            if (!next.closingCredit) next.closingCredit = next.assignee
           }
           if (patch.stage && patch.stage !== 'Won') {
             next.closedAt = undefined

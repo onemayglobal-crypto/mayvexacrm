@@ -69,11 +69,11 @@ export function DigitalCardsScreen({ onOpenLead }: DigitalCardsScreenProps) {
       {/* Grid of Cards */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {filteredLeads.map((lead) => {
-          // Vibrant, high-contrast golden yellow theme
-          const gradientFrom = 'from-[#FF9900]' // Deep Vibrant Gold
-          const gradientVia = 'via-[#FFD700]' // Pure Bright Gold
-          const gradientTo = 'to-[#FF9900]' // Deep Vibrant Gold
-          const glowColor = 'bg-[#FFD700]/50' // Stronger, brighter glow
+          // Sky light blue theme
+          const gradientFrom = 'from-[#38bdf8]' // Sky 400
+          const gradientVia = 'via-[#7dd3fc]' // Sky 300 (Lighter highlight)
+          const gradientTo = 'to-[#38bdf8]' // Sky 400
+          const glowColor = 'bg-[#7dd3fc]/50' // Sky light blue glow
 
           return (
             <div

@@ -33,6 +33,11 @@ export function draftFromLead(lead: Lead): LeadDraft {
     stage: lead.stage,
     type: inferLeadType(lead),
     source: lead.source || '',
+    assignee: lead.assignee || '',
+    escalatedBy: lead.escalatedBy || '',
+    sourceCredit: lead.sourceCredit || '',
+    closingCredit: lead.closingCredit || '',
+    history: lead.history || [],
     nextAction: lead.nextAction,
     notes: lead.notes,
     lastContact: lead.lastContact,
@@ -166,6 +171,49 @@ export function LeadForm({
             placeholder="e.g. CTC Expo, Website, Referral from John"
           />
         </label>
+
+        {/* Assignment & Escalation */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className={fieldLabel}>Handled By (Assignee)</span>
+            <input
+              className={field}
+              value={value.assignee || ''}
+              onChange={(e) => set('assignee', e.target.value)}
+              placeholder="e.g. Sarah (Sales)"
+            />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Escalated By</span>
+            <input
+              className={field}
+              value={value.escalatedBy || ''}
+              onChange={(e) => set('escalatedBy', e.target.value)}
+              placeholder="e.g. Alex (Marketing)"
+            />
+          </label>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className={fieldLabel}>Source Credit</span>
+            <input
+              className={field}
+              value={value.sourceCredit || ''}
+              onChange={(e) => set('sourceCredit', e.target.value)}
+              placeholder="Who brought them in?"
+            />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Closing Credit</span>
+            <input
+              className={field}
+              value={value.closingCredit || ''}
+              onChange={(e) => set('closingCredit', e.target.value)}
+              placeholder="Who secured the deal?"
+            />
+          </label>
+        </div>
 
         {showStage && (
           <div>

@@ -115,6 +115,13 @@ export const PRESET_COMMANDS = [
       'Identify stalled B+ leads, verify company hiring signals, draft personalized re-engagement hooks, and schedule tasks on Today queue.',
     description: 'Autonomous dormant account reactivation.',
   },
+  {
+    id: 'cmd-ownership',
+    label: 'Audit Lead Ownership & Attribution',
+    prompt:
+      'Audit all closed-won deals this quarter, calculate commission splits based on Source Credit (20%), Follow-up Contribution (30%), and Closing Credit (50%), and generate a payout report.',
+    description: 'Autonomous commission calculation based on Lead Journey Intelligence.',
+  },
 ]
 
 // Default 8 high-impact enterprise leads requiring approval under Policy #ENT-402
